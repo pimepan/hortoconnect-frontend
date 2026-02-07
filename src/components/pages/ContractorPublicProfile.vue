@@ -31,6 +31,48 @@
             </div>
 
             <div class="container profile-content py-4">
+                <!-- Profile completion (visible to visitors) -->
+                <div class="profile-progress-card card mb-4" :class="{ 'profile-progress-complete': profileProgressCount >= 4 }">
+                    <div class="card-body py-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                            <span class="fw-semibold">Profile completion</span>
+                            <span class="text-muted small">{{ profileProgressCount }} of 4 complete</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div
+                                class="progress-bar bg-primary"
+                                role="progressbar"
+                                :style="{ width: profileProgressPercent + '%' }"
+                                :aria-valuenow="profileProgressCount"
+                                aria-valuemin="0"
+                                aria-valuemax="4"
+                            ></div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-3">
+                            <span class="d-flex align-items-center gap-1 profile-progress-item" :class="hasPhoto ? 'text-success' : 'text-muted'">
+                                <Check v-if="hasPhoto" :size="18" />
+                                <Circle v-else :size="18" />
+                                Profile photo
+                            </span>
+                            <span class="d-flex align-items-center gap-1 profile-progress-item" :class="hasDescription ? 'text-success' : 'text-muted'">
+                                <Check v-if="hasDescription" :size="18" />
+                                <Circle v-else :size="18" />
+                                Description
+                            </span>
+                            <span class="d-flex align-items-center gap-1 profile-progress-item" :class="hasOneProject ? 'text-success' : 'text-muted'">
+                                <Check v-if="hasOneProject" :size="18" />
+                                <Circle v-else :size="18" />
+                                One portfolio project
+                            </span>
+                            <span class="d-flex align-items-center gap-1 profile-progress-item" :class="hasOneSkill ? 'text-success' : 'text-muted'">
+                                <Check v-if="hasOneSkill" :size="18" />
+                                <Circle v-else :size="18" />
+                                Add a skill
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <div v-if="profile.description" class="card mb-4">
                     <div class="card-header"><h4 class="mb-0">About</h4></div>
                     <div class="card-body">
@@ -109,7 +151,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { Wrench, MapPin } from 'lucide-vue-next'
+import { Wrench, MapPin, Check, Circle } from 'lucide-vue-next'
 import PortfolioGrid from '../PortfolioGrid.vue'
 import config from '../../config.js'
 import { TRADE_SKILLS, SKILL_LEVELS } from '../../constants/skills.js'
@@ -117,7 +159,7 @@ import { formatDateLong } from '../../utils/formatters.js'
 
 export default {
     name: 'ContractorPublicProfile',
-    components: { Wrench, MapPin, PortfolioGrid },
+    components: { Wrench, MapPin, Check, Circle, PortfolioGrid },
     setup() {
         const route = useRoute()
         const profile = ref({})
@@ -181,6 +223,23 @@ export default {
             }).filter((s) => s.skillId)
         })
 
+        const hasPhoto = computed(() => !!(profile.value?.photoUrl))
+        const hasDescription = computed(() => {
+            const d = profile.value?.description ?? ''
+            return typeof d === 'string' && d.trim().length > 0
+        })
+        const hasOneProject = computed(() => (portfolioProjects.value?.length ?? 0) >= 1)
+        const hasOneSkill = computed(() => (skillsList.value?.length ?? 0) >= 1)
+        const profileProgressCount = computed(() => {
+            let n = 0
+            if (hasPhoto.value) n++
+            if (hasDescription.value) n++
+            if (hasOneProject.value) n++
+            if (hasOneSkill.value) n++
+            return n
+        })
+        const profileProgressPercent = computed(() => (profileProgressCount.value / 4) * 100)
+
         const getSkillName = (skillId) => {
             const found = (TRADE_SKILLS || []).find((s) => s.id === skillId)
             return found ? found.name : skillId
@@ -233,6 +292,12 @@ export default {
             serviceTypesDisplay,
             portfolioProjects,
             skillsList,
+            hasPhoto,
+            hasDescription,
+            hasOneProject,
+            hasOneSkill,
+            profileProgressCount,
+            profileProgressPercent,
             viewingProject,
             getSkillName,
             getSkillLevelName,
@@ -301,5 +366,9 @@ export default {
     font-weight: 600;
     font-size: 0.9rem;
     margin-top: 0.5rem;
+}
+
+.profile-progress-card.profile-progress-complete .progress-bar {
+    background-color: var(--success, #198754);
 }
 </style>

@@ -105,7 +105,7 @@
                                             class="col-6 col-md-4"
                                         >
                                             <div class="image-preview">
-                                                <img :src="img" alt="Preview" />
+                                                <img :src="imageUrl(img)" alt="Preview" />
                                                 <button
                                                     type="button"
                                                     class="btn-remove-image"
@@ -253,7 +253,7 @@ export default {
                 }
 
                 const newImages = data.images || []
-                form.value.images = [...form.value.images, ...newImages.map(img => img.url || img)]
+                form.value.images = [...form.value.images, ...newImages]
                 
                 // Clear the file dropzone after successful upload
                 imageFiles.value = []
@@ -268,6 +268,11 @@ export default {
             form.value.images.splice(index, 1)
         }
 
+        const imageUrl = (img) => {
+            if (typeof img === 'string') return img
+            return img?.url || ''
+        }
+
         const handleSubmit = async () => {
             updateTags()
             error.value = ''
@@ -279,8 +284,12 @@ export default {
 
             saving.value = true
             try {
+                const imagesForSave = form.value.images.map(img =>
+                    typeof img === 'string' ? { url: img } : { url: img?.url, path: img?.path }
+                )
                 const projectData = {
                     ...form.value,
+                    images: imagesForSave,
                     id: props.project?.id
                 }
                 emit('save', projectData)
@@ -350,6 +359,7 @@ export default {
             updateTags,
             handleImageFilesChange,
             removeImage,
+            imageUrl,
             handleSubmit
         }
     }

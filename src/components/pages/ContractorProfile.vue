@@ -651,22 +651,28 @@ export default {
             return formatCurrencyUSD(total)
         })
 
+        const normalizeImageUrl = (img) => (typeof img === 'string' ? img : img?.url)
+
         const portfolioProjectsComputed = computed(() => {
             const raw = profile.value?.portfolioProjects || profile.value?.portfolioImages || []
             if (Array.isArray(raw) && raw.length > 0) {
                 // Check if it's the old format (just images) or new format (projects)
-                if (typeof raw[0] === 'string' || (raw[0] && raw[0].url)) {
+                if (typeof raw[0] === 'string' || (raw[0] && raw[0].url && !raw[0].id)) {
                     // Old format - convert to projects
                     return raw.map((img, idx) => ({
                         id: `legacy-${idx}`,
                         legacyIndex: idx,
                         isLegacy: true,
                         title: `Portfolio Image ${idx + 1}`,
-                        images: [typeof img === 'string' ? img : img.url],
+                        images: [normalizeImageUrl(img)].filter(Boolean),
                         createdAt: new Date().toISOString()
                     }))
                 }
-                return raw
+                // New format: ensure each project's images are URL strings for display
+                return raw.map((p) => ({
+                    ...p,
+                    images: (p.images || []).map(normalizeImageUrl).filter(Boolean)
+                }))
             }
             return []
         })
