@@ -176,6 +176,10 @@
                                                         {{ getStatusLabel(contract.status) }}
                                                     </span>
                                                 </div>
+                                                <div v-if="contract.budget" class="contract-budget">
+                                                    <span class="contract-budget-amount">{{ formatCurrency(contract.budget) }}</span>
+                                                    <span class="contract-budget-label">Budget</span>
+                                                </div>
                                                 <p class="contract-description">{{ truncate(contract.description, 100) }}</p>
                                                 <div class="contract-meta">
                                                     <span class="meta-item">

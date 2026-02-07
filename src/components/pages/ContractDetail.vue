@@ -148,15 +148,46 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted mb-3">
-                        Your contract is saved as a draft. Submit the budget to hold it securely (demo mode) and publish for contractors to apply.
+                        Your contract is saved as a draft. Complete the checklist below, then publish for contractors to apply.
                     </p>
+
+                    <ul class="list-unstyled mb-3">
+                        <li class="d-flex align-items-center gap-2 mb-2">
+                            <span :class="hasImages ? 'text-success' : 'text-danger'" style="font-size: 1.1rem;">
+                                {{ hasImages ? '&#10003;' : '&#10007;' }}
+                            </span>
+                            <span :class="{ 'text-muted': hasImages }">
+                                Upload at least one project photo
+                            </span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2 mb-2">
+                            <span :class="hasDocument ? 'text-success' : 'text-danger'" style="font-size: 1.1rem;">
+                                {{ hasDocument ? '&#10003;' : '&#10007;' }}
+                            </span>
+                            <span :class="{ 'text-muted': hasDocument }">
+                                Upload a contract PDF document
+                            </span>
+                        </li>
+                        <li class="d-flex align-items-center gap-2 mb-2">
+                            <span :class="hasBudget ? 'text-success' : 'text-danger'" style="font-size: 1.1rem;">
+                                {{ hasBudget ? '&#10003;' : '&#10007;' }}
+                            </span>
+                            <span :class="{ 'text-muted': hasBudget }">
+                                Set a budget
+                            </span>
+                        </li>
+                    </ul>
+
                     <button
                         class="btn btn-primary"
-                        :disabled="publishing"
+                        :disabled="publishing || !canPublish"
                         @click="publishContract"
                     >
                         {{ publishing ? 'Publishing…' : 'Submit budget and publish' }}
                     </button>
+                    <div v-if="!canPublish" class="text-danger small mt-2">
+                        Please complete all items above before publishing.
+                    </div>
                 </div>
             </div>
 
@@ -449,6 +480,14 @@ export default {
                 .filter((it) => it && typeof it === 'object' && it.url)
         })
 
+        const hasImages = computed(() => contractImages.value.length > 0)
+        const hasDocument = computed(() => !!contract.value?.documentPath)
+        const hasBudget = computed(() => {
+            const b = contract.value?.budget
+            return b !== null && b !== undefined && b !== '' && b !== 0
+        })
+        const canPublish = computed(() => hasImages.value && hasDocument.value && hasBudget.value)
+
         const formatRequirement = (r) => {
             if (!r) return 'Requirement'
             const base = r.coverageType ? `${r.documentType}:${r.coverageType}` : `${r.documentType}`
@@ -553,6 +592,10 @@ export default {
         }
 
         const publishContract = async () => {
+            if (!canPublish.value) {
+                error.value = 'Cannot publish: please upload photos, a PDF document, and set a budget first.'
+                return
+            }
             publishing.value = true
             error.value = ''
             try {
@@ -802,6 +845,10 @@ export default {
             requiredDocs,
             contractDocument,
             contractImages,
+            hasImages,
+            hasDocument,
+            hasBudget,
+            canPublish,
             formatRequirement,
             statusBadgeClass,
             formatStatus,

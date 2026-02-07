@@ -47,6 +47,11 @@
                 <span :class="statusBadgeClass">{{ contract.status || 'open' }}</span>
             </div>
 
+            <div class="budget-display" v-if="contract.budget">
+                <span class="budget-amount">{{ formattedBudget }}</span>
+                <span class="budget-label">Budget</span>
+            </div>
+
             <p class="card-text text-muted mb-3" style="max-height: 3.6em; overflow: hidden;">
                 {{ contract.description || '' }}
             </p>
@@ -82,6 +87,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import config from '../config.js'
+import { formatCurrencyUSD } from '../utils/formatters.js'
 
 export default {
     name: 'ContractCard',
@@ -142,6 +148,10 @@ export default {
             event.target.style.display = 'none'
         }
 
+        const formattedBudget = computed(() => {
+            return formatCurrencyUSD(props.contract.budget)
+        })
+
         const statusBadgeClass = computed(() => {
             const map = {
                 open: 'badge bg-success',
@@ -199,6 +209,7 @@ export default {
             locationText,
             statusBadgeClass,
             applicationsCount,
+            formattedBudget,
             coverImageUrl,
             hasImages,
             imageCount,
@@ -331,6 +342,33 @@ export default {
     color: var(--dark);
     margin-bottom: 0.75rem;
     line-height: 1.3;
+}
+
+.budget-display {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.08) 0%, rgba(var(--primary-rgb), 0.03) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(var(--primary-rgb), 0.12);
+}
+
+.budget-amount {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+    line-height: 1;
+}
+
+.budget-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--secondary);
 }
 
 .card-text {
