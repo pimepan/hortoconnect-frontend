@@ -17,7 +17,7 @@
             <KTWarning class="me-2 text-warning mb-2" width="48" height="48" />
           </slot>
           <slot name="text">
-            <p class="mb-4 fw-bold">¿Estás seguro de que deseas proceder con esta acción?</p>
+            <p class="mb-4 fw-bold">Are you sure you want to continue?</p>
           </slot>
         </div>
 
@@ -30,10 +30,10 @@
               $emit('cancel');
             "
           >
-            <slot name="confirm">Cancelar</slot>
+            <slot name="confirm">Cancel</slot>
           </WButton>
           <WButton class="btn-danger" @click="trigger()" :loading="loading">
-            <slot name="confirm">Si, seguro</slot>
+            <slot name="confirm">Yes, continue</slot>
           </WButton>
         </div>
       </template>
@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import Modal from './Modal.vue'
+import Modal from './popups/Modal.vue'
 export default {
   components: {
     Modal,

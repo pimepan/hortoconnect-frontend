@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 640" role="img" aria-label="Landscaping illustration">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#B3E5FC" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#F4FAF1" stop-opacity="0.0"/>
+    </linearGradient>
+    <linearGradient id="hillA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#81C784"/>
+      <stop offset="1" stop-color="#2E7D32"/>
+    </linearGradient>
+    <linearGradient id="hillB" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#DCEDC8"/>
+      <stop offset="1" stop-color="#7CB342"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="
+        1 0 0 0 0
+        0 1 0 0 0
+        0 0 1 0 0
+        0 0 0 0.35 0" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Sky wash -->
+  <rect x="0" y="0" width="920" height="640" fill="url(#sky)"/>
+
+  <!-- Sun -->
+  <circle cx="760" cy="130" r="44" fill="#F9A825" opacity="0.95"/>
+  <circle cx="760" cy="130" r="78" fill="#F9A825" opacity="0.12"/>
+
+  <!-- Distant hill -->
+  <path d="M0 360 C140 280 260 300 360 340 C520 405 630 395 760 320 C820 285 880 270 920 275 L920 640 L0 640 Z" fill="url(#hillB)"/>
+
+  <!-- Near hill -->
+  <path d="M0 430 C160 360 290 380 410 430 C560 495 690 500 920 410 L920 640 L0 640 Z" fill="url(#hillA)"/>
+
+  <!-- Simple tree -->
+  <g filter="url(#soft)" transform="translate(165 260)">
+    <path d="M248 280 C248 220 268 205 282 178 C295 152 300 130 292 110 C284 90 266 82 252 78 C242 60 222 52 202 56 C190 42 168 34 148 42 C128 24 100 26 84 42 C58 46 40 66 38 92 C18 106 12 132 26 152 C16 178 26 206 52 218 C56 244 78 268 112 270 C130 294 164 306 200 300 C220 316 250 320 270 306 C286 312 306 308 320 296 C342 292 360 274 362 252 C380 232 382 206 368 188 C376 158 362 130 336 118 C332 92 312 70 284 66 C274 52 260 44 248 46 C230 28 202 26 182 38 C168 26 146 26 132 36 C110 30 92 38 84 52 C66 54 54 66 50 82 C32 94 26 116 36 134 C28 154 36 176 56 186 C58 208 74 228 100 232 C112 252 134 266 160 264 C178 276 206 278 228 268 C236 276 242 280 248 280 Z"
+          fill="#7CB342" opacity="0.96"/>
+    <path d="M206 640 L206 362 C206 338 226 320 250 320 C274 320 292 338 292 362 L292 640 Z" fill="#6D4C41"/>
+    <path d="M208 468 C196 450 178 436 158 428 C138 420 118 420 100 426 L108 444 C124 438 140 440 154 446 C168 452 180 462 188 474 Z" fill="#2E7D32" opacity="0.9"/>
+  </g>
+
+  <!-- Decorative dots -->
+  <g opacity="0.5">
+    <circle cx="86" cy="120" r="5" fill="#2E7D32"/>
+    <circle cx="120" cy="156" r="3.5" fill="#7CB342"/>
+    <circle cx="78" cy="184" r="3" fill="#6D4C41"/>
+    <circle cx="842" cy="220" r="4" fill="#2E7D32"/>
+    <circle cx="816" cy="252" r="3" fill="#7CB342"/>
+  </g>
+</svg>
+

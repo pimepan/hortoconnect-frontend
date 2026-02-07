@@ -6,6 +6,22 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const hexToRgb = (hex) => {
+  if (!hex) return "0,0,0";
+  const raw = hex.toString().trim().replace("#", "");
+  const full = raw.length === 3 ? raw.split("").map((c) => c + c).join("") : raw;
+  const int = parseInt(full, 16);
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  return `${r},${g},${b}`;
+};
+
+const buildColors = (palette) =>
+  Object.fromEntries(
+    Object.entries(palette).map(([name, hex]) => [name, { hex, rgb: hexToRgb(hex) }])
+  );
+
 const walkStyle = (style, colors = {}, breakPoints = {}) => {
   let rules = [];
   
@@ -73,29 +89,74 @@ function generateTheme(theme = {
   breakpoints: {
     sm: 576, md: 768, lg: 992, xl: 1200, xxl: 1400
   },
-  colors: {
-    "primary": { hex: "#004e98", rgb: "236,38,169" },
-    "primary-1": { hex: "#3a6ea5", rgb: "253,184,230" },
-    "secondary": { hex: "#8d99ae", rgb: "79,61,83" },
-    "secondary-1": { hex: "#dad7cd", rgb: "74,59,77" },
-    "info": { hex: "#26E0EC", rgb: "38,224,236" },
-    "info-1": { hex: "#BEF5F9", rgb: "190,245,249" },
-    "warning": { hex: "#fec601", rgb: "236,228,38" },
-    "warning-1": { hex: "#ea7317", rgb: "250,249,208" },
-    "success": { hex: "#3bceac", rgb: "38,236,177" },
-    "success-1": { hex: "#0ead69", rgb: "184,250,230" },
-    "danger": { hex: "#ee4266", rgb: "236,38,38" },
-    "danger-1": { hex: "#ff99ac", rgb: "253,184,184" },
-    "white": { hex: "#FFFFFF", rgb: "255,255,255" },
-    "light": { hex: "#F4F4F4", rgb: "244,244,244" },
-    "light-1": { hex: "#CFCFCF", rgb: "207,207,207" },
-    "light-2": { hex: "#BBBBBB", rgb: "187,187,187" },
-    "dark": { hex: "#1E1E1E", rgb: "30,30,30" },
-    "dark-1": { hex: "#221B23", rgb: "34,27,35" },
-    "dark-2": { hex: "#322834", rgb: "50,40,52" },
-    "dark-3": { hex: "#180E1A", rgb: "24,14,26" }
-  },
+  // Modern landscaping palette: olive greens + earth + sun.
+  colors: buildColors({
+    "primary": "#6B8E23",      // olive green
+    "primary-1": "#9ACD32",    // yellow-green (light olive)
+    "secondary": "#78716C",    // modern earth brown
+    "secondary-1": "#E7E5E4",  // light sand
+    "accent": "#556B2F",       // dark olive green
+    "accent-1": "#C4D4A0",     // pale olive
+    "info": "#3B82F6",         // modern blue
+    "info-1": "#DBEAFE",       // light blue
+    "warning": "#F59E0B",      // modern amber
+    "warning-1": "#FDE68A",    // light amber
+    "success": "#556B2F",
+    "success-1": "#C4D4A0",
+    "danger": "#EF4444",
+    "danger-1": "#FEE2E2",
+    "white": "#FFFFFF",
+    "light": "#F5F5DC",        // beige/light olive
+    "light-1": "#E8F5E9",      // soft mint green
+    "light-2": "#C4D4A0",      // light olive
+    "dark": "#0F172A",         // modern dark
+    "dark-1": "#1E293B",
+    "dark-2": "#334155",
+    "dark-3": "#0A0E1A"
+  }),
   styles: [
+    // Base app styling
+    {
+      selector: "html",
+      style: "background-color: var(--light) !important;"
+    },
+    {
+      selector: "body",
+      style:
+        "background: radial-gradient(1100px circle at 10% 10%, rgba(var(--primary-rgb), 0.08), transparent 55%), radial-gradient(900px circle at 90% 0%, rgba(var(--accent-rgb), 0.06), transparent 55%), var(--light) !important; color: var(--dark) !important;"
+    },
+    { selector: "a", style: "color: var(--primary) !important;" },
+    { selector: "a:hover", style: "color: var(--accent) !important;" },
+    { selector: "small, .text_small", style: "color: inherit !important;" },
+
+    // Navbar + surfaces
+    {
+      selector: ".navbar",
+      style:
+        "background-color: rgba(var(--white-rgb), 0.75) !important; backdrop-filter: blur(14px); border-bottom: 1px solid rgba(var(--primary-rgb), 0.18) !important;"
+    },
+    { selector: ".navbar-brand", style: "color: var(--dark) !important; font-weight: 800;" },
+    { selector: ".navbar .nav-link", style: "color: var(--dark) !important; font-weight: 600;" },
+    { selector: ".navbar .nav-link:hover", style: "color: var(--primary) !important;" },
+    {
+      selector: ".navbar .nav-link.router-link-active, .navbar .nav-link.router-link-exact-active",
+      style: "color: var(--primary) !important;"
+    },
+    {
+      selector: ".dropdown-menu",
+      style:
+        "border-radius: 14px !important; border: 1px solid rgba(var(--primary-rgb), 0.14) !important; box-shadow: 0 18px 50px rgba(var(--dark-rgb), 0.12) !important;"
+    },
+    {
+      selector: ".card-header",
+      style:
+        "background-color: rgba(var(--primary-rgb), 0.08) !important; border-bottom: 1px solid rgba(var(--primary-rgb), 0.12) !important;"
+    },
+    {
+      selector: ".table thead th",
+      style: "background-color: rgba(var(--primary-rgb), 0.06) !important; color: var(--dark) !important;"
+    },
+
     { selector: ".pointer", style: "cursor:pointer" },
     { selector: ".text-#color", style: "color:#color !important" },
     { selector: ".bg-#color", style: "background-color:#color !important" },
@@ -105,7 +166,7 @@ function generateTheme(theme = {
       selector: ".btn-#color:focus", 
       style: "background-color:#color !important; box-shadow: 0 6px 22px rgba(#color-rgb, 0.45) !important;" 
     },
-    { selector: ".btn", style: "border-radius:12px !important; border:none !important; height:3rem" },
+    { selector: ".btn", style: "border-radius:12px !important; border:1px solid transparent !important; height:3rem" },
     { selector: ".text-hover-#color:hover", style: "color:#color !important;" },
     { selector: ".text-active-#color:active", style: "color:#color !important;" },
     { selector: ".bg-hover-#color:hover", style: "background-color:#color !important;" },
@@ -162,10 +223,11 @@ function generateTheme(theme = {
     rules.push(...walkStyle(style, theme.colors, theme.breakpoints));
   });
   
-  const sheet = rules.join('');
+  const sheet = rules.join('\n');
 
   // Write CSS file to the same directory
-  const outputPath = path.join(__dirname, 'theme.css');
+  const outputPath = path.join(__dirname, 'src', 'assets', 'css', 'theme.css');
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, sheet);
   console.log(`✅ Theme CSS generated at: ${outputPath}`);
 }

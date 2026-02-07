@@ -42,12 +42,8 @@ export default {
 </script>
 
 <style scoped>
-.btn {
-  min-height: 3.2rem;
-  font-size: 1.1rem;
-  color:white;
-  border-radius: 12px;
-  
-
+/* Ensure text color is set by button variant classes, not default white */
+.btn:not(.btn-outline-primary):not(.btn-outline-secondary):not(.btn-outline-light):not(.btn-outline-dark):not(.btn-light):not(.btn-white):not(.btn-warning) {
+  color: white;
 }
 </style>
