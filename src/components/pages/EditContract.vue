@@ -71,6 +71,23 @@
 
                 <hr class="my-4" />
 
+                <div class="mb-4">
+                    <h5 class="mb-2">Contract document (PDF)</h5>
+                    <div v-if="hasDocument" class="text-muted small mb-2">Current document attached. Upload a new file to replace.</div>
+                    <FileDropzone
+                        v-model="contractDocumentFiles"
+                        accept=".pdf,application/pdf"
+                        :multiple="false"
+                        :max-size="20"
+                        :label="hasDocument ? 'Replace document' : 'Upload document'"
+                        hint="Upload the contract document as PDF (max 20MB)"
+                        :show-preview="false"
+                        :disabled="loading"
+                    />
+                </div>
+
+                <hr class="my-4" />
+
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <h5 class="mb-0">Requirements</h5>
                     <button class="btn btn-sm btn-outline-primary" @click="addRequirement">Add</button>
@@ -129,13 +146,14 @@ import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import config from '../../config.js'
 import SearchableSelect from '../utils/SearchableSelect.vue'
+import FileDropzone from '../utils/FileDropzone.vue'
 import { US_STATES } from '../../constants/usStates'
 import { US_CITIES } from '../../constants/usCities'
 import { getCountyOptionsForState } from '../../constants/usCounties'
 
 export default {
     name: 'EditContract',
-    components: { SearchableSelect },
+    components: { SearchableSelect, FileDropzone },
     setup() {
         const router = useRouter()
         const route = useRoute()
@@ -146,6 +164,8 @@ export default {
         const loadError = ref('')
         const loading = ref(false)
         const error = ref('')
+        const hasDocument = ref(false)
+        const contractDocumentFiles = ref([])
 
         const stateOptions = US_STATES
         const cityOptions = US_CITIES
@@ -198,6 +218,7 @@ export default {
                     setTimeout(() => router.push(`/contracts/${id}`), 2000)
                     return
                 }
+                hasDocument.value = !!c.documentPath
                 const reqs = (c.requirements && c.requirements.requiredDocuments) || []
                 form.value = {
                     title: c.title || '',
@@ -253,6 +274,20 @@ export default {
                 })
                 const data = await resp.json()
                 if (!resp.ok) throw new Error(data.error || 'Failed to update contract')
+
+                if (contractDocumentFiles.value.length > 0) {
+                    const pdfFile = contractDocumentFiles.value[0]
+                    const docForm = new FormData()
+                    docForm.append('file', pdfFile.file)
+                    const docResp = await fetch(`${config.backend.api}/api/contracts/${contractId.value}/document`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: docForm
+                    })
+                    const docData = await docResp.json()
+                    if (!docResp.ok) throw new Error(docData.error || 'Error uploading contract document')
+                }
+
                 router.push(`/contracts/${contractId.value}`)
             } catch (err) {
                 error.value = err.message || 'Failed to update contract'
@@ -276,7 +311,9 @@ export default {
             error,
             addRequirement,
             removeRequirement,
-            submit
+            submit,
+            hasDocument,
+            contractDocumentFiles
         }
     }
 }

@@ -63,21 +63,37 @@
                     <h5 class="mb-0">Contract document</h5>
                 </div>
                 <div class="card-body">
-                    <a
-                        :href="contractDocument.url"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="btn btn-outline-primary d-inline-flex align-items-center gap-2"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                            <polyline points="10 9 9 9 8 9"/>
-                        </svg>
-                        Download PDF ({{ contractDocument.fileName || 'contract.pdf' }})
-                    </a>
+                    <iframe
+                        :src="contractDocument.url"
+                        class="contract-pdf-preview"
+                        title="Contract PDF"
+                    />
+                    <div class="d-flex gap-2 flex-wrap mt-3">
+                        <a
+                            :href="contractDocument.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn btn-outline-primary d-inline-flex align-items-center gap-2"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                            View PDF
+                        </a>
+                        <a
+                            :href="contractDocument.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            :download="contractDocument.fileName || 'contract.pdf'"
+                            class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+                        >
+                            Download PDF ({{ contractDocument.fileName || 'contract.pdf' }})
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -336,7 +352,7 @@
 </template>
 
 <script>
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 import ComplianceStatus from '../ComplianceStatus.vue'
@@ -386,6 +402,8 @@ export default {
         const awarding = ref(false)
         const completing = ref(false)
 
+        const documentFallbackUrl = ref(null)
+
         const statusBadgeClass = computed(() => {
             const map = {
                 draft: 'badge bg-secondary',
@@ -415,9 +433,12 @@ export default {
         })
 
         const contractDocument = computed(() => {
-            const doc = contract.value?.contractDocument
-            if (!doc || typeof doc !== 'object') return null
-            return doc.url ? doc : null
+            const c = contract.value
+            if (!c?.documentPath) return null
+            const url = documentFallbackUrl.value
+            if (!url || typeof url !== 'string') return null
+            const fileName = c.documentPath ? c.documentPath.split('/').pop() || 'contract.pdf' : 'contract.pdf'
+            return { url, fileName }
         })
 
         const contractImages = computed(() => {
@@ -460,9 +481,34 @@ export default {
             return Array.from(out)
         })
 
+        const fetchDocumentFromBackend = async () => {
+            const c = contract.value
+            if (!c?.documentPath || !authStore.isAuthenticated) return
+            const previousUrl = documentFallbackUrl.value
+            if (previousUrl && previousUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previousUrl)
+            }
+            documentFallbackUrl.value = null
+            try {
+                const token = await authStore.getAuthToken()
+                const resp = await fetch(`${config.backend.api}/api/contracts/${contractId.value}/document`, {
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+                if (!resp.ok) return
+                const blob = await resp.blob()
+                documentFallbackUrl.value = URL.createObjectURL(blob)
+            } catch {
+                // ignore
+            }
+        }
+
         const fetchContract = async () => {
             loading.value = true
             error.value = ''
+            const prevDocUrl = documentFallbackUrl.value
+            if (prevDocUrl && prevDocUrl.startsWith('blob:')) URL.revokeObjectURL(prevDocUrl)
+            documentFallbackUrl.value = null
             try {
                 let response
                 if (authStore.isAuthenticated) {
@@ -480,6 +526,7 @@ export default {
                 if (authStore.user?.uid && contract.value?.createdByUid === authStore.user.uid && contract.value?.status === 'open') {
                     fetchContractApplications()
                 }
+                await fetchDocumentFromBackend()
             } catch (err) {
                 error.value = err.message || 'Error loading contract'
             } finally {
@@ -739,6 +786,11 @@ export default {
             await fetchMyApplicationForContract()
         })
 
+        onUnmounted(() => {
+            const url = documentFallbackUrl.value
+            if (url && url.startsWith('blob:')) URL.revokeObjectURL(url)
+        })
+
         return {
             route,
             router,
@@ -811,6 +863,14 @@ export default {
 
 .card-body {
     padding: 1.5rem;
+}
+
+.contract-pdf-preview {
+    width: 100%;
+    min-height: 500px;
+    height: 500px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--primary-rgb), 0.15);
 }
 
 .img-thumbnail {
