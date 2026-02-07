@@ -40,6 +40,7 @@
                         <thead>
                             <tr>
                                 <th>Contract</th>
+                                <th>Budget</th>
                                 <th v-if="showContractorColumn">Contractor</th>
                                 <th>Status</th>
                                 <th>Compliance</th>
@@ -50,11 +51,15 @@
                             <tr v-for="a in applications" :key="a.id">
                                 <td>
                                     <router-link :to="`/contracts/${a.contractId}`" class="text-decoration-none">
-                                        {{ a.contractTitle || a.contractId }}
+                                        {{ a.contractTitle || 'Untitled contract' }}
                                     </router-link>
                                 </td>
+                                <td>
+                                    <span v-if="getApplicationBudget(a)" class="budget-cell">{{ getApplicationBudget(a) }}</span>
+                                    <span v-else class="text-muted">—</span>
+                                </td>
                                 <td v-if="showContractorColumn">
-                                    <router-link v-if="a.contractorUid" :to="'/contractors/' + a.contractorUid" class="text-decoration-none">{{ a.contractorName || a.contractorUid }}</router-link>
+                                    <router-link v-if="a.contractorUid" :to="'/contractors/' + a.contractorUid" class="text-decoration-none">{{ a.contractorName || 'Contractor' }}</router-link>
                                     <span v-else class="text-muted">—</span>
                                 </td>
                                 <td><span :class="getApplicationStatusClass(a.status)">{{ formatApplicationStatus(a.status) }}</span></td>
@@ -89,6 +94,7 @@
                             <thead>
                                 <tr>
                                     <th>Contract</th>
+                                    <th>Budget</th>
                                     <th v-if="showContractorColumn">Contractor</th>
                                     <th>Status</th>
                                     <th>Compliance</th>
@@ -99,11 +105,15 @@
                                 <tr v-for="a in applications" :key="a.id">
                                     <td>
                                         <router-link :to="`/contracts/${a.contractId}`" class="text-decoration-none">
-                                            {{ a.contractTitle || a.contractId }}
+                                            {{ a.contractTitle || 'Untitled contract' }}
                                         </router-link>
                                     </td>
+                                    <td>
+                                        <span v-if="getApplicationBudget(a)" class="budget-cell">{{ getApplicationBudget(a) }}</span>
+                                        <span v-else class="text-muted">—</span>
+                                    </td>
                                     <td v-if="showContractorColumn">
-                                        <router-link v-if="a.contractorUid" :to="'/contractors/' + a.contractorUid" class="text-decoration-none">{{ a.contractorName || a.contractorUid }}</router-link>
+                                        <router-link v-if="a.contractorUid" :to="'/contractors/' + a.contractorUid" class="text-decoration-none">{{ a.contractorName || 'Contractor' }}</router-link>
                                         <span v-else class="text-muted">—</span>
                                     </td>
                                     <td><span :class="getApplicationStatusClass(a.status)">{{ formatApplicationStatus(a.status) }}</span></td>
@@ -126,7 +136,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import ComplianceStatus from './ComplianceStatus.vue'
 import config from '../config.js'
-import { formatDateLong } from '../utils/formatters.js'
+import { formatDateLong, formatCurrencyUSD } from '../utils/formatters.js'
 import { RefreshCw } from 'lucide-vue-next'
 
 export default {
@@ -190,10 +200,7 @@ export default {
         }
 
         const showContractorColumn = computed(() => {
-            const apps = applications.value || []
-            const hasContractorUids = apps.some((a) => a.contractorUid)
-            const isBuyerView = props.role === 'bid_poster'
-            return hasContractorUids || isBuyerView
+            return props.role === 'bid_poster'
         })
 
         const formatDate = (dateString) => formatDateLong(dateString)
@@ -212,6 +219,12 @@ export default {
             return map[status] || status
         }
 
+        const getApplicationBudget = (app) => {
+            const budget = app?.contractBudget ?? app?.contract?.budget
+            if (budget == null || budget === '') return null
+            return formatCurrencyUSD(budget)
+        }
+
         onMounted(fetchApplications)
 
         return {
@@ -222,7 +235,8 @@ export default {
             fetchApplications,
             formatDate,
             getApplicationStatusClass,
-            formatApplicationStatus
+            formatApplicationStatus,
+            getApplicationBudget
         }
     }
 }
@@ -268,6 +282,14 @@ export default {
 .badge {
     font-weight: 600;
     padding: 0.5rem 0.875rem;
+}
+
+.budget-cell {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -0.3px;
+    white-space: nowrap;
 }
 </style>
 

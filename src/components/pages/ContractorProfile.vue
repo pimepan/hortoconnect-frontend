@@ -603,7 +603,7 @@ export default {
                 applications.value.slice(0, 3).forEach(app => {
                     activities.push({
                         id: `app-${app.id}`,
-                        title: `Applied to "${app.contractTitle || app.contractId}"`,
+                        title: `Applied to "${app.contractTitle || 'Untitled contract'}"`,
                         time: formatDate(app.createdAt),
                         icon: Briefcase
                     })

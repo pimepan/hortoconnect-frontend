@@ -227,9 +227,12 @@
                                     <div v-for="contract in pastContracts" :key="contract.id" class="contract-item">
                                         <div class="contract-content">
                                             <h5 class="contract-title">{{ contract.title || 'Untitled' }}</h5>
+                                            <div v-if="contract.finalAmount || contract.budget" class="contract-budget contract-budget--inline">
+                                                <span class="contract-budget-amount">{{ formatCurrency(contract.finalAmount || contract.budget) }}</span>
+                                                <span class="contract-budget-label">Final Amount</span>
+                                            </div>
                                             <div class="contract-meta">
-                                                <span class="text-muted">Final amount: {{ formatCurrency(contract.finalAmount || contract.budget) }}</span>
-                                                <span class="text-muted ms-3">Completed: {{ formatDate(contract.completedAt || contract.updatedAt) }}</span>
+                                                <span class="text-muted">Completed: {{ formatDate(contract.completedAt || contract.updatedAt) }}</span>
                                             </div>
                                         </div>
                                         <div class="contract-actions">
@@ -381,7 +384,7 @@ export default {
                 applications.value.slice(0, 2).forEach(app => {
                     activities.push({
                         id: `app-${app.id}`,
-                        title: `Received application for "${app.contractTitle || app.contractId}"`,
+                        title: `Received application for "${app.contractTitle || 'Untitled contract'}"`,
                         time: formatDate(app.createdAt),
                         icon: Users
                     })
@@ -568,7 +571,7 @@ export default {
             try {
                 const token = await getAuthToken()
                 const params = new URLSearchParams()
-                if (authStore.currentUserType) params.set('role', authStore.currentUserType)
+                params.set('role', 'bid_poster')
                 const response = await fetch(`${config.backend.api}/api/applications/me?${params.toString()}`, {
                     method: 'GET',
                     headers: {
@@ -854,6 +857,38 @@ export default {
     color: var(--dark);
     margin: 0;
     flex: 1;
+}
+
+.contract-budget {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.08) 0%, rgba(var(--primary-rgb), 0.03) 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(var(--primary-rgb), 0.12);
+}
+
+.contract-budget--inline {
+    display: inline-flex;
+    margin-bottom: 0.5rem;
+}
+
+.contract-budget-amount {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+    line-height: 1;
+}
+
+.contract-budget-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--secondary);
 }
 
 .contract-description {
