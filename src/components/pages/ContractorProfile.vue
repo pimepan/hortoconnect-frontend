@@ -52,8 +52,73 @@
                 </div>
             </div>
 
-            <!-- Main Content -->
+            <!-- Profile completion progress -->
             <div class="container profile-content">
+                <div class="profile-progress-card card mb-4" :class="{ 'profile-progress-complete': profileProgressCount >= 4 }">
+                    <div class="card-body py-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                            <span class="fw-semibold">Profile completion</span>
+                            <span class="text-muted small">{{ profileProgressCount }} of 4 complete</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div
+                                class="progress-bar bg-primary"
+                                role="progressbar"
+                                :style="{ width: profileProgressPercent + '%' }"
+                                :aria-valuenow="profileProgressCount"
+                                aria-valuemin="0"
+                                aria-valuemax="4"
+                            ></div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-3">
+                            <button
+                                type="button"
+                                class="btn btn-link btn-sm p-0 text-decoration-none d-flex align-items-center gap-1 profile-progress-item"
+                                :class="hasPhoto ? 'text-success' : 'text-muted'"
+                                :disabled="hasPhoto"
+                                @click="!hasPhoto && onTabChange('profile')"
+                            >
+                                <Check v-if="hasPhoto" :size="18" />
+                                <Circle v-else :size="18" />
+                                Profile photo
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-link btn-sm p-0 text-decoration-none d-flex align-items-center gap-1 profile-progress-item"
+                                :class="hasDescription ? 'text-success' : 'text-muted'"
+                                :disabled="hasDescription"
+                                @click="!hasDescription && onTabChange('profile')"
+                            >
+                                <Check v-if="hasDescription" :size="18" />
+                                <Circle v-else :size="18" />
+                                Description
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-link btn-sm p-0 text-decoration-none d-flex align-items-center gap-1 profile-progress-item"
+                                :class="hasOneProject ? 'text-success' : 'text-muted'"
+                                :disabled="hasOneProject"
+                                @click="!hasOneProject && onTabChange('portfolio')"
+                            >
+                                <Check v-if="hasOneProject" :size="18" />
+                                <Circle v-else :size="18" />
+                                One portfolio project
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-link btn-sm p-0 text-decoration-none d-flex align-items-center gap-1 profile-progress-item"
+                                :class="hasOneSkill ? 'text-success' : 'text-muted'"
+                                :disabled="hasOneSkill"
+                                @click="!hasOneSkill && onTabChange('profile')"
+                            >
+                                <Check v-if="hasOneSkill" :size="18" />
+                                <Circle v-else :size="18" />
+                                Add a skill
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Stats -->
                 <ProfileStats :stats="statsData" :columns="3" />
 
@@ -226,7 +291,7 @@
                             :projects="portfolioProjects"
                             :loading="loadingPortfolio"
                             :error="portfolioError"
-                            @add-project="showPortfolioModal = true"
+                            @add-project="router.push('/profile/contractor/portfolio/new')"
                             @view-project="viewPortfolioProject"
                             @edit-project="editPortfolioProject"
                             @delete-project="deletePortfolioProject"
@@ -360,9 +425,9 @@
 
 <script>
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
-import { Mail, Calendar, Wrench, FileText, Briefcase, CheckCircle, Clock, DollarSign } from 'lucide-vue-next'
+import { Mail, Calendar, Wrench, FileText, Briefcase, CheckCircle, Clock, DollarSign, Check, Circle } from 'lucide-vue-next'
 import ProfileTabs from '../ProfileTabs.vue'
 import ProfileStats from '../ProfileStats.vue'
 import PortfolioGrid from '../PortfolioGrid.vue'
@@ -386,6 +451,8 @@ export default {
         CheckCircle,
         Clock,
         DollarSign,
+        Check,
+        Circle,
         ProfileTabs,
         ProfileStats,
         PortfolioGrid,
@@ -397,6 +464,7 @@ export default {
     },
     setup() {
         const router = useRouter()
+        const route = useRoute()
         const authStore = useAuthStore()
 
         const profile = ref({})
@@ -454,6 +522,22 @@ export default {
         })
 
         const photoUrl = computed(() => profile.value?.photoUrl || authStore.userProfile?.photoUrl || null)
+        const hasPhoto = computed(() => !!photoUrl.value)
+        const hasDescription = computed(() => {
+            const d = (profile.value?.description ?? profileForm.value?.description) ?? ''
+            return typeof d === 'string' && d.trim().length > 0
+        })
+        const hasOneProject = computed(() => (portfolioProjects.value?.length ?? 0) >= 1)
+        const hasOneSkill = computed(() => ((profileForm.value?.skills ?? profile.value?.skills)?.length ?? 0) >= 1)
+        const profileProgressCount = computed(() => {
+            let n = 0
+            if (hasPhoto.value) n++
+            if (hasDescription.value) n++
+            if (hasOneProject.value) n++
+            if (hasOneSkill.value) n++
+            return n
+        })
+        const profileProgressPercent = computed(() => (profileProgressCount.value / 4) * 100)
         const initials = computed(() => {
             const name = (profile.value?.name || '').toString().trim()
             if (name) {
@@ -1109,6 +1193,10 @@ export default {
         }
 
         onMounted(async () => {
+            const tabFromQuery = route.query.tab
+            if (tabFromQuery && ['overview', 'profile', 'portfolio', 'applications', 'past-contracts', 'documents'].includes(tabFromQuery)) {
+                activeTab.value = tabFromQuery
+            }
             await Promise.all([
                 fetchProfile(),
                 fetchApplications(),
@@ -1118,6 +1206,7 @@ export default {
         })
 
         return {
+            router,
             profile,
             profileForm,
             loading,
@@ -1127,6 +1216,12 @@ export default {
             saveError,
             saveSuccess,
             photoUrl,
+            hasPhoto,
+            hasDescription,
+            hasOneProject,
+            hasOneSkill,
+            profileProgressCount,
+            profileProgressPercent,
             initials,
             uploadingPhoto,
             photoError,
@@ -1188,6 +1283,14 @@ export default {
 .contractor-profile {
     min-height: 100vh;
     background: var(--light);
+}
+
+.profile-progress-card .profile-progress-item:not(:disabled) {
+    cursor: pointer;
+}
+
+.profile-progress-card.profile-progress-complete .progress-bar {
+    background-color: var(--success, #198754);
 }
 
 .profile-hero {

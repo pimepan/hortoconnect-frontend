@@ -165,7 +165,7 @@ export default {
 
                 // Redirect to the role dashboard
                 if (selectedRole.value === 'contractor') {
-                    router.push('/onboarding/contractor')
+                    router.push('/profile/contractor')
                 } else if (selectedRole.value === 'bid_poster') {
                     router.push('/profile/buyer')
                 } else {

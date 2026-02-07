@@ -24,13 +24,13 @@ export default {
     
     const showNavbar = computed(() => {
       // Don't show navbar on auth screens
-      const hideNavbarRoutes = ['/login', '/signup', '/select-role', '/onboarding/contractor']
+      const hideNavbarRoutes = ['/login', '/signup', '/select-role']
       return !hideNavbarRoutes.includes(route.path)
     })
 
     const showFooter = computed(() => {
       // Don't show footer on auth screens
-      const hideFooterRoutes = ['/login', '/signup', '/select-role', '/onboarding/contractor']
+      const hideFooterRoutes = ['/login', '/signup', '/select-role']
       return !hideFooterRoutes.includes(route.path)
     })
 

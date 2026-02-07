@@ -358,7 +358,7 @@ export default {
                 label: 'Total Spend',
                 value: totalSpent.value,
                 icon: Briefcase,
-                color: 'var(--info)'
+                color: 'var(--primary)'
             }
         ])
 

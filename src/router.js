@@ -10,10 +10,10 @@ import ForBuyers from './components/pages/marketing/ForBuyers.vue'
 import Login from './components/pages/auth/Login.vue'
 import Signup from './components/pages/auth/Signup.vue'
 import RoleSelection from './components/pages/auth/RoleSelection.vue'
-import ContractorOnboarding from './components/pages/auth/ContractorOnboarding.vue'
 
 import Dashboard from './components/pages/Dashboard.vue'
 import ContractorProfile from './components/pages/ContractorProfile.vue'
+import AddPortfolioProject from './components/pages/AddPortfolioProject.vue'
 import ContractorPublicProfile from './components/pages/ContractorPublicProfile.vue'
 import BuyerProfile from './components/pages/BuyerProfile.vue'
 import BrokerageProfile from './components/pages/BrokerageProfile.vue'
@@ -58,12 +58,6 @@ const routes = [
     component: RoleSelection
   },
   {
-    path: '/onboarding/contractor',
-    component: ContractorOnboarding,
-    props: { role: 'contractor' },
-    meta: { requiresAuth: true, requiredRoles: ['contractor'] }
-  },
-  {
     path: '/dashboard',
     component: Dashboard,
     meta: { requiresAuth: true }
@@ -71,6 +65,11 @@ const routes = [
   {
     path: '/profile/contractor',
     component: ContractorProfile,
+    meta: { requiresAuth: true, requiredRoles: ['contractor'] }
+  },
+  {
+    path: '/profile/contractor/portfolio/new',
+    component: AddPortfolioProject,
     meta: { requiresAuth: true, requiredRoles: ['contractor'] }
   },
   {
