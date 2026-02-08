@@ -15,7 +15,7 @@
         </div>
         <div v-else>
             <div v-if="isAwardedContractor" class="alert alert-success mb-4" role="alert">
-                <strong>You were selected for this contract.</strong> You have full access to the contract details and document. Deadline: {{ contract.deadline || 'N/A' }}
+                <strong>You were selected for this contract.</strong> You have full access to the contract details and document. Deadline: {{ formattedDeadline }}
             </div>
             <div class="card mb-4">
                 <div class="card-body">
@@ -26,9 +26,13 @@
                                     {{ contract.contractType }} • {{ locationText || 'N/A' }}
                                 </small>
                             </p>
+                            <div v-if="contract.budget" class="budget-display mb-2">
+                                <span class="budget-amount">{{ formattedBudget }}</span>
+                                <span class="budget-label">Budget</span>
+                            </div>
                             <p class="mb-0 text-muted">
                                 <small>
-                                    Deadline: {{ contract.deadline || 'N/A' }}
+                                    Deadline: {{ formattedDeadline }}
                                     <span class="mx-2">•</span>
                                     Applicants: {{ contract.applicationsCount ?? 0 }}
                                 </small>
@@ -389,6 +393,7 @@ import { useAuthStore } from '../../stores/auth'
 import ComplianceStatus from '../ComplianceStatus.vue'
 import FileDropzone from '../utils/FileDropzone.vue'
 import config from '../../config.js'
+import { formatDateLong, formatCurrencyUSD } from '../../utils/formatters.js'
 
 export default {
     name: 'ContractDetail',
@@ -456,6 +461,9 @@ export default {
             const parts = [contract.value.locationCity, contract.value.locationCounty, contract.value.locationState].filter(Boolean)
             return parts.join(', ')
         })
+
+        const formattedDeadline = computed(() => formatDateLong(contract.value?.deadline))
+        const formattedBudget = computed(() => formatCurrencyUSD(contract.value?.budget))
 
         const requiredDocs = computed(() => {
             const req = contract.value?.requirements
@@ -842,6 +850,8 @@ export default {
             error,
             contract,
             locationText,
+            formattedDeadline,
+            formattedBudget,
             requiredDocs,
             contractDocument,
             contractImages,
@@ -929,6 +939,30 @@ export default {
 .img-thumbnail:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 12px rgba(var(--dark-rgb), 0.2);
+}
+
+.budget-display {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.08) 0%, rgba(var(--primary-rgb), 0.03) 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(var(--primary-rgb), 0.12);
+}
+
+.budget-display .budget-amount {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.budget-display .budget-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--secondary);
 }
 
 .badge {

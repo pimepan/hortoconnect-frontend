@@ -58,7 +58,7 @@
 
             <div class="d-flex justify-content-between align-items-center">
                 <div class="text-muted small">
-                    Deadline: {{ contract.deadline || 'N/A' }}
+                    Deadline: {{ formattedDeadline }}
                 </div>
                 <div class="d-flex gap-2">
                     <router-link class="btn btn-sm btn-outline-primary" :to="`/contracts/${contract.id}`">
@@ -87,7 +87,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import config from '../config.js'
-import { formatCurrencyUSD } from '../utils/formatters.js'
+import { formatCurrencyUSD, formatDateLong } from '../utils/formatters.js'
 
 export default {
     name: 'ContractCard',
@@ -152,6 +152,10 @@ export default {
             return formatCurrencyUSD(props.contract.budget)
         })
 
+        const formattedDeadline = computed(() => {
+            return formatDateLong(props.contract.deadline)
+        })
+
         const statusBadgeClass = computed(() => {
             const map = {
                 open: 'badge bg-success',
@@ -210,6 +214,7 @@ export default {
             statusBadgeClass,
             applicationsCount,
             formattedBudget,
+            formattedDeadline,
             coverImageUrl,
             hasImages,
             imageCount,
