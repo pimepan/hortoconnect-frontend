@@ -284,9 +284,11 @@ export default {
 
             saving.value = true
             try {
-                const imagesForSave = form.value.images.map(img =>
-                    typeof img === 'string' ? { url: img } : { url: img?.url, path: img?.path }
-                )
+                const imagesForSave = form.value.images.map((img) => {
+                    if (typeof img === 'object' && img?.path) return { path: img.path }
+                    if (typeof img === 'object' && img?.url) return { url: img.url }
+                    return { url: typeof img === 'string' ? img : (img?.url ?? '') }
+                })
                 const projectData = {
                     ...form.value,
                     images: imagesForSave,

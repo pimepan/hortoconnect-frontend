@@ -34,7 +34,7 @@
             <div v-for="project in projects" :key="project.id" class="col-12 col-md-6 col-lg-4">
                 <div class="portfolio-card">
                     <div class="portfolio-card-image" v-if="project.images && project.images.length > 0">
-                        <img :src="project.images[0]" :alt="project.title" />
+                        <img :src="portfolioImageSrc(project.images[0])" :alt="project.title" />
                         <div class="portfolio-card-overlay">
                             <div class="portfolio-card-actions">
                                 <button class="btn btn-sm btn-light" @click="$emit('view-project', project)" title="View">
@@ -119,6 +119,10 @@ export default {
     },
     emits: ['add-project', 'view-project', 'edit-project', 'delete-project'],
     methods: {
+        portfolioImageSrc(img) {
+            if (typeof img === 'string') return img
+            return img?.url || ''
+        },
         truncate(text, length) {
             if (!text) return ''
             if (text.length <= length) return text

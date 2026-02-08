@@ -95,7 +95,7 @@
                                         class="col-6 col-md-4"
                                     >
                                         <div class="image-preview">
-                                            <img :src="img" alt="Preview" />
+                                            <img :src="imageUrl(img)" alt="Preview" />
                                             <button
                                                 type="button"
                                                 class="btn-remove-image"
@@ -215,7 +215,8 @@ export default {
                 }
 
                 const newImages = data.images || []
-                form.value.images = [...form.value.images, ...newImages.map(img => img.url || img)]
+                // Keep full objects { path, url } so we persist path (path survives refresh; url expires)
+                form.value.images = [...form.value.images, ...newImages.map(img => ({ path: img.path, url: img.url }))]
                 imageFiles.value = []
             } catch (err) {
                 error.value = err.message || 'Failed to upload images'
@@ -226,6 +227,11 @@ export default {
 
         const removeImage = (index) => {
             form.value.images.splice(index, 1)
+        }
+
+        const imageUrl = (img) => {
+            if (typeof img === 'string') return img
+            return img?.url || ''
         }
 
         const handleSubmit = async () => {
@@ -240,13 +246,19 @@ export default {
             saving.value = true
             try {
                 const token = await authStore.getAuthToken()
+                // Send path when available (persists across refresh); url expires in 7 days
+                const imagesForSave = form.value.images.map((img) => {
+                    if (typeof img === 'object' && img?.path) return { path: img.path }
+                    if (typeof img === 'object' && img?.url) return { url: img.url }
+                    return { url: typeof img === 'string' ? img : (img?.url ?? '') }
+                })
                 const payload = {
                     title: form.value.title.trim(),
                     description: form.value.description || '',
                     location: form.value.location || '',
                     completedDate: form.value.completedDate || '',
                     tags: form.value.tags,
-                    images: form.value.images
+                    images: imagesForSave
                 }
 
                 const response = await fetch(`${config.backend.api}/api/profiles/contractor/portfolio`, {
@@ -283,6 +295,7 @@ export default {
             removeTag,
             handleImageFilesChange,
             removeImage,
+            imageUrl,
             handleSubmit
         }
     }

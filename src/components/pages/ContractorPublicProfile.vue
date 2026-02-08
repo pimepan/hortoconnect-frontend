@@ -131,7 +131,7 @@
                             <p v-if="viewingProject.description">{{ viewingProject.description }}</p>
                             <div v-if="viewingProject.images && viewingProject.images.length" class="row g-2 mt-2">
                                 <div v-for="(img, i) in viewingProject.images" :key="i" class="col-6 col-md-4">
-                                    <img :src="img" alt="" class="img-fluid rounded" />
+                                    <img :src="typeof img === 'string' ? img : (img?.url || '')" alt="" class="img-fluid rounded" />
                                 </div>
                             </div>
                             <div v-if="viewingProject.location" class="text-muted small mt-2">

@@ -668,10 +668,10 @@ export default {
                         createdAt: new Date().toISOString()
                     }))
                 }
-                // New format: ensure each project's images are URL strings for display
+                // New format: keep images as { path?, url } so modal can re-send path on save
                 return raw.map((p) => ({
                     ...p,
-                    images: (p.images || []).map(normalizeImageUrl).filter(Boolean)
+                    images: p.images || []
                 }))
             }
             return []
